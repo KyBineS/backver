@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "be",
+  "name": "backver",
   "builds": [
     {
       "src": "src/index.ts",
