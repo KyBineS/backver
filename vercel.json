@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "project": "be",
+  "name": "be",
   "builds": [
     {
       "src": "src/index.ts",
@@ -9,7 +9,7 @@
   ],
   "routes": [
     {
-      "src": "^/.*$",
+      "src": "/(.*)",
       "dest": "src/index.ts"
     }
   ]
