@@ -1,78 +1,109 @@
-import  express from 'express'
-const app = express()
+import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+
+interface Video {
+    id: string;
+    title: string;
+    description: string;
+    url: string;
+    views: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const app = express();
 const port = process.env.PORT || 3000;
-const HTTP_STAUSES ={
+
+// база данных
+const videos: Video[] = [
+    {
+        id: '1',
+        title: 'Видео 1',
+        description: 'Это видео 1',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        views: 1000,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+    {
+        id: '2',
+        title: 'Видео 2',
+        description: 'Это видео 2',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        views: 2000,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    },
+];
+
+// Константы для HTTP статус кодов
+const HTTP_STATUSES = {
     OK_200: 200,
     CREATED_201: 201,
     NO_CONTENT_204: 204,
-
     BAD_REQUEST_400: 400,
     NOT_FOUND_404: 404,
-}
+};
 
-const jsonBodyMiddleware = express.json()
-app.use(jsonBodyMiddleware)
+// Middleware для парсинга тела запроса
+app.use(bodyParser.json());
 
-const db = {
-    courses:[
-        {id: 1, title: 'front-end'},
-        {id: 2, title: 'back-end'},
-        {id: 3, title: 'automation-qa'},
-        {id: 4, title: 'devops'}
-    ]
-}
+// DELETE /ht_01/api/testing/all-data - очистить базу данных: удалить все данные из всех таблиц/коллекций
+app.delete('/ht_01/api/testing/all-data', (req: Request, res: Response) => {
+    videos.splice(0, videos.length);
+    res.sendStatus(HTTP_STATUSES.NO_CONTENT_204);
+});
 
-app.get('/courses', (req, res) =>{
-let foundCourses = db.courses;
-if(req.query.title){
-    foundCourses = foundCourses.filter((c => c.title.indexOf(req.query.title as string) > -1))
-}
+// GET /ht_01/api/videos - вернуть все видео
+app.get('/ht_01/api/videos', (req: Request, res: Response) => {
+    res.json(videos);
+});
 
-    res.json(foundCourses)
-})
-app.get('/courses/:id', (req, res) => {
-    const foundCourse = db.courses.find(c => c.id === +req.params.id)
-    if(!foundCourse){
-        res.sendStatus(HTTP_STAUSES.NOT_FOUND_404);
-        return
+// POST /ht_01/api/videos - создать новое видео
+app.post('/ht_01/api/videos', (req,res) => {
+    const { title, description, url } = req.body;
+    if (!title || !description || !url) {
+        return res.sendStatus(HTTP_STATUSES.BAD_REQUEST_400);
     }
-    res.json(foundCourse)
-})
-app.post('/courses' , (req,res) =>{
-    if(!req.body.title){
-        res.sendStatus(HTTP_STAUSES.BAD_REQUEST_400)
-        return;
-    }
-    const createdCourse =  {
-        id: +(new Date()),
-        title: req.body.title
-    }
-    db.courses.push(createdCourse)
+    const newVideo: Video = {
+        id: Date.now().toString(),
+        title,
+        description,
+        url,
+        views: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+    videos.push(newVideo);
+    return res.status(HTTP_STATUSES.CREATED_201).json(newVideo);
+});
 
-    res
-        .status(HTTP_STAUSES.CREATED_201)
-        .json(createdCourse)
-})
-app.delete('/courses/:id', (req, res) => {
-    db.courses = db.courses.filter(c => c.id != +req.params.id)
 
-    res.sendStatus(HTTP_STAUSES.NO_CONTENT_204)
-})
-app.put('/courses/:id', (req, res) => {
+// GET /ht_01/api/videos/{id} - вернуть видео по id
+app.get('/ht_01/api/videos/:id', (req, res) => {
+    const id = req.params.id;
+    const video = videos.find((v) => v.id === id);
+    if (!video) {
+        return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
+    }
+    return res.json(video);
+});
 
-    if(!req.body.title){
-        res.sendStatus(HTTP_STAUSES.BAD_REQUEST_400);
-        return
+// PUT /ht_01/api/videos/{id} - обновить существующее видео по id с помощью InputModel
+app.put('/ht_01/api/videos/:id', (req, res) => {
+    const id = req.params.id;
+    const { title, description, url } = req.body;
+    const video = videos.find((v) => v.id === id);
+    if (!video) {
+        return res.sendStatus(HTTP_STATUSES.NOT_FOUND_404);
     }
-    const foundCourse = db.courses.find(c => c.id === +req.params.id)
-    if(!foundCourse){
-        res.sendStatus(HTTP_STAUSES.NOT_FOUND_404);
-        return;
-    }
-    foundCourse.title = req.body.title;
-    res.sendStatus(HTTP_STAUSES.NO_CONTENT_204)
-})
+    video.title = title || video.title;
+    video.description = description || video.description;
+    video.url = url || video.url;
+    video.updatedAt = new Date();
+    return res.json(video);
+});
+
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-
-})
+    console.log(`Server is listening on port ${port}`);
+});
