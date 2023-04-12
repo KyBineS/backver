@@ -1,4 +1,4 @@
-import express, {Request, Response} from "express";
+import express, {request, Response} from "express";
 import bodyParser from "body-parser";
 import {runInNewContext} from "vm";
 
