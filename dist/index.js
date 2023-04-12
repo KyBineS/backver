@@ -7,7 +7,8 @@ const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
-const parserMiddLeware = (0, body_parser_1.default)({});
+// middleware для парсинга json-тела запроса
+const parserMiddLeware = body_parser_1.default.json();
 app.use(parserMiddLeware);
 const videosDB = [
     {
@@ -22,58 +23,66 @@ const videosDB = [
     },
     {
         id: 2,
-        title: "1+1",
+        title: "The Intouchables",
         author: "Olivier Nakache",
         canBeDownloaded: true,
         minAgeRestriction: 16,
         createdAt: "2011-09-23T00:00:00.000Z",
         publicationDate: "2011-09-23T00:00:00.000Z",
         availableResolution: ["P144"],
-    }
+    },
 ];
-const availableResolutions = ["P144", "P240", "P360", "P480", "P720", "P1080", "P1440", "P2160"];
+const availableResolutions = [
+    "P144",
+    "P240",
+    "P360",
+    "P480",
+    "P720",
+    "P1080",
+    "P1440",
+    "P2160",
+];
 //DELETE ALL
-app.delete('/testing/all-data', (req, res) => {
+app.delete("/videos", (req, res) => {
     videosDB.splice(0, videosDB.length);
-    res.send(204);
+    res.sendStatus(204); // sendStatus() вместо send() для отправки только кода статуса
 });
 //RETURN ALL
-app.get('/videos', (req, res) => {
+app.get("/videos", (req, res) => {
     res.send(videosDB);
 });
-//RETURN ID
-app.get('/videos/:id', (req, res) => {
-    let video = videosDB.find(p => p.id === +req.params.id);
+//RETURN BY ID
+app.get("/videos/:id", (req, res) => {
+    const video = videosDB.find((p) => p.id === +req.params.id);
     if (video) {
         res.send(video);
     }
     else {
-        res.send(404);
+        res.sendStatus(404); // sendStatus() вместо send() для отправки только кода статуса
     }
 });
-//find refactoring
-//DELETE ID
-app.get('/videos/:id', (req, res) => {
-    for (let i = 0; i < videosDB.length; i++) {
-        if (videosDB[i].id === +req.params.id) {
-            videosDB.splice(i, 1);
-            res.send(204);
-            return;
-        }
+//DELETE BY ID
+app.delete("/videos/:id", (req, res) => {
+    const index = videosDB.findIndex((p) => p.id === +req.params.id);
+    if (index !== -1) {
+        videosDB.splice(index, 1);
+        res.sendStatus(204); // sendStatus() вместо send() для отправки только кода статуса
     }
-    res.send(404);
+    else {
+        res.sendStatus(404); // sendStatus() вместо send() для отправки только кода статуса
+    }
 });
-//create new
-app.post('/videos', (req, res) => {
-    let newVideo = {
-        id: +(new Date()),
+//CREATE NEW
+app.post("/videos", (req, res) => {
+    const newVideo = {
+        id: Date.now(),
         title: req.body.title,
         author: req.body.author,
-        canBeDownloaded: req.body.canBeDownloaded,
-        minAgeRestriction: req.body.minAgeRestriction,
-        createdAt: (new Date().toISOString()),
-        publicationDate: (new Date(new Date().setDate(new Date().getDate() + 1)).toISOString()),
-        availableResolution: req.body.availbeResolution,
+        canBeDownloaded: req.body.canBeDownloaded !== undefined ? req.body.canBeDownloaded : false,
+        minAgeRestriction: typeof req.body.minAgeRestriction === "number" ? req.body.minAgeRestriction : 16,
+        createdAt: new Date().toISOString(),
+        publicationDate: new Date(Date.now() + 86400000).toISOString(),
+        availableResolution: req.body.availableResolution || [], // пустой массив, если availableResolution не передан в запросе
     };
     let errors_array = [];
     //checking
