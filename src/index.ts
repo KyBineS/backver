@@ -17,7 +17,7 @@ const videosDB = [
         minAgeRestriction: 16,
         createdAt: "2011-09-23T00:00:00.000Z",
         publicationDate: "2011-09-23T00:00:00.000Z",
-        availableResolution: ["P144"],
+        availableResolutions: ["P144"],
     },
     {
         id: 2,
@@ -27,7 +27,7 @@ const videosDB = [
         minAgeRestriction: 16,
         createdAt: "2011-09-23T00:00:00.000Z",
         publicationDate: "2011-09-23T00:00:00.000Z",
-        availableResolution: ["P144"],
+        availableResolutions: ["P144"],
     }
 ];
 const availableResolutions = ["P144" , "P240" , "P360" , "P480" , "P720" , "P1080" , "P1440" , "P2160"]
@@ -76,7 +76,7 @@ app.post('/videos', (req,res) => {
         minAgeRestriction: req.body.minAgeRestriction,
         createdAt: (new Date().toISOString()),
         publicationDate: (new Date(new Date().setDate(new Date().getDate() + 1)).toISOString()),
-        availableResolution: req.body.availbeResolution,
+        availableResolutions: req.body.availableResolutions,
     }
     let errors_array =[];
     //checking
@@ -88,17 +88,17 @@ app.post('/videos', (req,res) => {
     if(typeof newVideo.author !== "string" || newVideo.author.length > 20){
         errors_array.push({message: "error", field: "author"})
     }
-    //availableResolution
-    if(Array.isArray(newVideo?.availableResolution)){
-        const length = newVideo?.availableResolution.length
-        let checking = newVideo?.availableResolution.filter(value => {
+    //availableResolutions
+    if(Array.isArray(newVideo?.availableResolutions)){
+        const length = newVideo?.availableResolutions.length
+        let checking = newVideo?.availableResolutions.filter(value => {
             return availableResolutions.includes(value)
         })
         if(checking.length < length){
-            errors_array.push({message: "error" , field: "availableResolution"})
+            errors_array.push({message: "error" , field: "availableResolutions"})
         }
     } else {
-        errors_array.push({message: "error", field: "availableResolution"})
+        errors_array.push({message: "error", field: "availableResolutions"})
     }
     //canBeDownloaded
     if(typeof newVideo?.canBeDownloaded !== "boolean"){
@@ -148,16 +148,16 @@ app.put('/videos/:id', (req,res) => {
             errors_array.push({message: "error", field: "author"})
         }
         //availableResolutions
-        if (Array.isArray(newVideo?.availableResolution)){
-            const length = newVideo?.availableResolution.length
-            let checking = newVideo?.availableResolution.filter((value: string) => {
+        if (Array.isArray(newVideo?.availableResolutions)){
+            const length = newVideo?.availableResolutions.length
+            let checking = newVideo?.availableResolutions.filter((value: string) => {
                 return availableResolutions.includes(value)
             })
             if (checking.length < length){
-                errors_array.push({message: "error", field: "availableResolution"})
+                errors_array.push({message: "error", field: "availableResolutions"})
             }
         } else {
-            errors_array.push({message: "error", field: "availableResolution"})
+            errors_array.push({message: "error", field: "availableResolutions"})
         }
         //canBeDownloaded
         if(typeof newVideo?.canBeDownloaded !== "boolean"){
