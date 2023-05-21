@@ -68,18 +68,19 @@ app.delete('/videos/:id', (req,res) =>{
 
 
 //create new
-app.post('/videos', (req,res) => {
-    let newVideo = {
+app.post('/videos', (req, res) => {
+    const newVideo = {
         id: +(new Date()),
         title: req.body.title,
         author: req.body.author,
         canBeDownloaded: req.body.canBeDownloaded,
         minAgeRestriction: req.body.minAgeRestriction,
-        createdAt: (new Date().toISOString()),
-        publicationDate: (new Date(new Date().setDate(new Date().getDate() + 1)).toISOString()),
+        createdAt: new Date().toISOString(),
+        publicationDate: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(),
         availableResolutions: req.body.availableResolutions,
-    }
-    let errors_array =[];
+    };
+
+    const errors_array = [];
     //checking
     //title
     if(typeof newVideo.title !== "string" || newVideo.title.length > 40){
@@ -112,7 +113,7 @@ app.post('/videos', (req,res) => {
     //minAgeRestriction
     if(newVideo?.minAgeRestriction !== 16 && typeof newVideo?.minAgeRestriction !== "number"){
         if(newVideo?.minAgeRestriction === undefined){
-            newVideo.minAgeRestriction = 16
+            newVideo.minAgeRestriction = req.body.minAgeRestriction || null
         } else {
             errors_array.push({message: "error", field: "minAgeRestriction"})
         }
